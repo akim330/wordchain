@@ -71,11 +71,11 @@ for length in range(3, 11):
     f = open(f"{word_list_generate}_{length}.json", "r")
     word_dicts[length] = json.load(f)
 
-def generate_chain(starting_length=10, start = None, verbose = True):
+def generate_chain(length=9, start = None, verbose = False):
 
     if start:
         if verbose:
-            print(f"Trying {start} with words {word_dicts[starting_length][start]}")
+            print(f"Trying {start} with words {word_dicts[length][start]}")
         chain = find_subchain(start)
         if chain != []:
             detailed_dict = {}
@@ -87,9 +87,9 @@ def generate_chain(starting_length=10, start = None, verbose = True):
         return []
 
     while True:
-        start = sample(word_dicts[starting_length].keys(), 1)[0]
+        start = sample(word_dicts[length].keys(), 1)[0]
         if verbose:
-            print(f"Trying {start} with words {word_dicts[starting_length][start]}")
+            print(f"Trying {start} with words {word_dicts[length][start]}")
 
         chain = find_subchain(start)
         if chain != []:
