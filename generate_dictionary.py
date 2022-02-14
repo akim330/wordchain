@@ -24,7 +24,7 @@ with open('common_words.txt') as f:
     words = f.readlines()
 words = [word.split(' ')[0].upper() for word in words]
 
-for length in range(8, 11):
+for length in range(3, 11):
 
     all_words = [word for word in words if len(word) == length and word in scrabble_words]
     alpha_words = [''.join(sorted(word)) for word in all_words]
@@ -37,5 +37,5 @@ for length in range(8, 11):
 
 
     f = open(f"{word_list}_{length}.json", "w")
-    json.dump(word_dict, f)
+    json.dump(word_dict, f, sort_keys=True)
     f.close()

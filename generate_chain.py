@@ -2,6 +2,9 @@ from random import sample, shuffle
 import json
 from collections import Counter
 
+words_to_remove = ['PRENTICE']
+words_to_add = []
+
 def remove_letters(word, indices):
     sorted_indices = sorted(indices)
     new_word = ''
@@ -13,10 +16,17 @@ def remove_letters(word, indices):
     new_word += word[sorted_indices[-1]+1:]
     return new_word
 
+def is_contained_by(l1, l2):
+    for el in l1:
+        if el not in l2:
+            return False
+    return True
+
 def find_subchain(letters):
     length = len(letters)
 
-    if letters not in word_dicts[length] or True in [word[-1] == 'S' for word in word_dicts[length][letters]]:
+    if letters not in word_dicts[length] or is_contained_by(word_dicts[length][letters], words_to_remove):
+        # True in [word[-1] == 'S' for word in word_dicts[length][letters]]
         return []
 
     if len(letters) == 3:
@@ -114,70 +124,75 @@ def find_added_letter(s1, s2):
     return list((Counter(s2) - Counter(s1)).keys())[0]
 
 def play_game(length = 9, start_length = 3):
-    chain_dict = generate_chain(starting_length = length, start=None, verbose=False)
+    while True:
+        chain_dict = generate_chain(length = length, start=None, verbose=False)
 
-    user_word = ''
-    user_words = []
-    hints = 0
-    current_length = start_length
-    while current_length <= length:
-        current_stage = current_length - 2
-        current_letters = list(chain_dict.keys())[-1 * (current_stage)]
+        user_word = ''
+        user_words = []
+        hints = 0
+        current_length = start_length
+        while current_length <= length:
+            current_stage = current_length - 2
+            current_letters = list(chain_dict.keys())[-1 * (current_stage)]
 
-        if current_stage == 1 or user_word == '*':
-            print(f"{current_length} Letters \n")
-            print(f"{space_string(current_letters, shuffle_string = True)}\n\n")
-        else:
-            previous_letters = list(chain_dict.keys())[-1 * (current_stage - 1)]
-            added_letter = find_added_letter(previous_letters, current_letters)
-
-            print(f"{current_length} Letters \n")
-            print(f"{space_string(user_word + added_letter, shuffle_string=False)}\n\n")
-
-        while True:
-            print("Enter word (press Return to shuffle or '*' to give up and see answer):")
-            user_word = input().upper()
-
-            if user_word == '*':
-                print(f"Answers: {', '.join(chain_dict[current_letters])}\n")
-                user_words.append(chain_dict[current_letters])
-                hints += 1
-                break
-            if user_word == '':
-                print(f"{space_string(current_letters, shuffle_string=True)}\n\n")
+            if current_stage == 1 or user_word == '*':
+                print(f"{current_length} Letters \n")
+                print(f"{space_string(current_letters, shuffle_string = True)}\n\n")
             else:
-                user_letters = ''.join(sorted(user_word))
+                previous_letters = list(chain_dict.keys())[-1 * (current_stage - 1)]
+                added_letter = find_added_letter(previous_letters, current_letters)
 
-                valid_word = user_word in words_check
-                uses_letters = user_letters == current_letters
-                if valid_word and uses_letters:
-                    print(f"GOOD! {current_length} letters found!\n")
-                    user_words.append(user_word)
+                print(f"{current_length} Letters \n")
+                print(f"{space_string(user_word + added_letter, shuffle_string=False)}\n\n")
+
+            while True:
+                print("Enter word (press Return to shuffle or '*' to give up and see answer):")
+                user_word = input().upper()
+
+                if user_word == '*':
+                    print(f"Answers: {', '.join(chain_dict[current_letters])}\n")
+                    user_words.append(chain_dict[current_letters])
+                    hints += 1
                     break
-                elif not valid_word and not uses_letters:
-                    print(f"Invalid word and doesn't use the right letters. Please try again \n")
-                elif not valid_word:
-                    print(f"Invalid word. Please try again \n")
-                elif not uses_letters:
-                    print("Doesn't use the right letters. Please try again.\n")
+                if user_word == '':
+                    print(f"{space_string(current_letters, shuffle_string=True)}\n\n")
                 else:
-                    raise(TypeError)
-        current_length += 1
+                    user_letters = ''.join(sorted(user_word))
 
-    print(f"Congratulations! You made it to {length} letters with {length - start_length - hints + 1} correct and {hints} hints")
-    for i in range(start_length, length + 1):
-        if type(user_words[i - start_length]) == str:
-            print(f"{i} letters: {user_words[i - start_length]}")
-        else:
-            print(f"{i} letters: None (Answers: {', '.join(user_words[i - start_length])})")
+                    valid_word = user_word in words_check
+                    uses_letters = user_letters == current_letters
+                    if valid_word and uses_letters:
+                        print(f"GOOD! {current_length} letters found!\n")
+                        user_words.append(user_word)
+                        break
+                    elif not valid_word and not uses_letters:
+                        print(f"Invalid word and doesn't use the right letters. Please try again \n")
+                    elif not valid_word:
+                        print(f"Invalid word. Please try again \n")
+                    elif not uses_letters:
+                        print("Doesn't use the right letters. Please try again.\n")
+                    else:
+                        raise(TypeError)
+            current_length += 1
 
-    print(f"Press return to see all answers:")
-    x = input()
-    print("All answers")
-    all_letters = list(chain_dict.keys())
-    for i in range(len(all_letters)):
-        print(f"{i + start_length} letters: {', '.join(chain_dict[all_letters[-1 - i]])}")
-    return
+        print(f"Congratulations! You made it to {length} letters with {length - start_length - hints + 1} correct and {hints} hints")
+        for i in range(start_length, length + 1):
+            if type(user_words[i - start_length]) == str:
+                print(f"{i} letters: {user_words[i - start_length]}")
+            else:
+                print(f"{i} letters: None (Answers: {', '.join(user_words[i - start_length])})")
+
+        print(f"Press return to see all answers:")
+        _ = input()
+        print("All answers")
+        all_letters = list(chain_dict.keys())
+        for i in range(len(all_letters)):
+            print(f"{i + start_length} letters: {', '.join(chain_dict[all_letters[-1 - i]])}")
+
+        print("Press return to play again or press '*' to leave:")
+        x = input()
+        if x == '*':
+            return
 
 
 
